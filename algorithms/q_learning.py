@@ -26,3 +26,7 @@ class QLearningAgent:
 
         # Update the q-table
         self.q_table[state, action] = new_value
+
+    def reset(self):
+        # Reset q-values to zeros
+        self.q_table = np.zeros([self.env.observation_space.n, self.env.action_space.n])
