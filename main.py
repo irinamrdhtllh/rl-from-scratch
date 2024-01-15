@@ -3,10 +3,42 @@ import gymnasium as gym
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 from tqdm import tqdm
 
 from algorithms.q_learning import QLearningAgent
+
+
+def hyperparams_tuning(env, n_episodes, n_runs, epsilon, alpha_list, gamma_list):
+    results = pd.DataFrame()
+    for alpha in alpha_list:
+        for gamma in gamma_list:
+            print(f"learning rate: {alpha}, discount factor: {gamma}")
+
+            agent = QLearningAgent(env, alpha=alpha, gamma=gamma)
+
+            timesteps_per_episode, penalties_per_episode = many_runs(
+                env, agent, n_episodes, n_runs, epsilon, training=True
+            )
+
+            # Collect results for this pair of hyperparameters
+            results_ = pd.DataFrame()
+            results_["timesteps"] = timesteps_per_episode
+            results_["penalties"] = penalties_per_episode
+            results_["learning rate"] = alpha
+            results_["discount factor"] = gamma
+            results = pd.concat([results, results_])
+
+    results = results.reset_index().rename(columns={"index": "episode"})
+
+    # Add column with the 2 hyperparameters
+    results["hyperparameters"] = [
+        f"learning rate = {a}, discount factor = {g}"
+        for (a, g) in zip(results["learning rate"], results["discount factor"])
+    ]
+
+    return results
 
 
 def run(env, agent, n_episodes, epsilon, training):
@@ -47,38 +79,40 @@ def run(env, agent, n_episodes, epsilon, training):
     return timesteps_per_episode, penalties_per_episode
 
 
+def many_runs(env, agent, n_episodes, n_runs, epsilon, training):
+    timesteps = np.zeros(shape=(n_runs, n_episodes))
+    penalties = np.zeros(shape=(n_runs, n_episodes))
+
+    for i in range(0, n_runs):
+        agent.reset()
+
+        timesteps[i, :], penalties[i, :] = run(
+            env, agent, n_episodes, epsilon, training=True
+        )
+
+    timesteps_per_episode = np.mean(timesteps, axis=0).tolist()
+    penalties_per_episode = np.mean(penalties, axis=0).tolist()
+
+    return timesteps_per_episode, penalties_per_episode
+
+
 if __name__ == "__main__":
     env = gym.make("Taxi-v3").env
-    agent = QLearningAgent(env, alpha=0.1, gamma=0.6)
 
-    # Exploration vs. exploitation prob
-    train_epsilon = 0.1
-    eval_epsilon = 0.05
+    # hyperparameters
+    alphas = [0.01, 0.1, 1]
+    gammas = [0.1, 0.6, 0.9]
 
-    # Number of episodes
-    train_episodes = 10000
-    eval_episodes = 100
-
-    # Train the agent
-    timesteps_per_episode, penalties_per_episode = run(
-        env, agent, n_episodes=train_episodes, epsilon=train_epsilon, training=True
+    results = hyperparams_tuning(
+        env,
+        n_episodes=10000,
+        n_runs=10,
+        epsilon=0.1,
+        alpha_list=alphas,
+        gamma_list=gammas,
     )
 
-    # Plot the training process
-    fig, ax = plt.subplots(figsize=(12, 4))
-    ax.set_title("Timesteps to complete ride")
-    pd.Series(timesteps_per_episode).plot(kind="line")
+    fig = plt.gcf()
+    fig.set_size_inches(12, 8)
+    sns.lineplot(data=results, x="episode", y="timesteps", hue="hyperparameters")
     plt.show()
-
-    fig, ax = plt.subplots(figsize=(12, 4))
-    ax.set_title("Penalties per ride")
-    pd.Series(penalties_per_episode).plot(kind="line")
-    plt.show()
-
-    # Evaluate the agent
-    timesteps_per_episode, penalties_per_episode = run(
-        env, agent, n_episodes=eval_episodes, epsilon=eval_epsilon, training=False
-    )
-
-    print(np.array(timesteps_per_episode).mean())
-    print(np.array(penalties_per_episode).mean())
