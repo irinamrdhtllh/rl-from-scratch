@@ -1,7 +1,9 @@
 import numpy as np
 
+from algorithms.base_agent import BaseAgent
 
-class QLearningAgent:
+
+class QLearningAgent(BaseAgent):
     def __init__(self, env, alpha, gamma):
         self.env = env
         # Table with q-values (n_states * n_actions)

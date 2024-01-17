@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from methods.loops import run
-from algorithms.q_learning import QLearningAgent
+from algorithms.q_learning.agent import QLearningAgent
 
 
 # Tuned hyperparameters

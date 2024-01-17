@@ -2,7 +2,7 @@ import gymnasium as gym
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from algorithms.q_learning import QLearningAgent
+from algorithms.q_learning.agent import QLearningAgent
 from methods.hyperparams import hyperparams_tuning
 
 
