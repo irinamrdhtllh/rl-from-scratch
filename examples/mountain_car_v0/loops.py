@@ -1,7 +1,7 @@
 import random
 
-from typing import Callable
 from tqdm import tqdm
+from typing import Callable
 
 
 def run(env, agent, n_episodes, training, epsilon=None):
