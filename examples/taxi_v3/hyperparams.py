@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-from loops import many_runs
+from .loops import many_runs
 from algorithms.q_learning.agent import QLearningAgent
 
 

@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-from loops import run
+from .loops import run
 from algorithms.q_learning.agent import QLearningAgent
 
 

@@ -2,7 +2,7 @@ import gymnasium as gym
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from loops import run
+from .loops import run
 from algorithms.sarsa.agent import SarsaAgent
 
 
